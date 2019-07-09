@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2018 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
+// | 版权所有 2014~2019 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
 // +----------------------------------------------------------------------
 // | 官方网站: http://library.thinkadmin.top
 // +----------------------------------------------------------------------
@@ -39,9 +39,14 @@ class Data
         list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
         $map = isset($where[$key]) ? [] : (is_string($value) ? [[$key, 'in', explode(',', $value)]] : [$key => $value]);
         if (is_array($info = Db::table($table)->master()->where($where)->where($map)->find()) && !empty($info)) {
-            return Db::table($table)->strict(false)->where($where)->where($map)->update($data) !== false ? $info[$key] : false;
+            if (Db::table($table)->strict(false)->where($where)->where($map)->update($data) !== false) {
+                return isset($info[$key]) ? $info[$key] : true;
+            } else {
+                return false;
+            }
+        } else {
+            return Db::table($table)->strict(false)->insertGetId($data);
         }
-        return Db::table($table)->strict(false)->insertGetId($data);
     }
 
     /**
@@ -126,7 +131,7 @@ class Data
     }
 
     /**
-     * 数据唯一数字编码
+     * 唯一数字编码
      * @param integer $length
      * @return string
      */
@@ -140,8 +145,41 @@ class Data
     }
 
     /**
+     * 唯一日期编码
+     * @param integer $length
+     * @return string
+     */
+    public static function uniqidDateCode($length = 14)
+    {
+        if ($length < 14) $length = 14;
+        $string = date('Ymd') . (date('H') + date('i')) . date('s');
+        while (strlen($string) < $length) $string .= rand(0, 9);
+        return $string;
+    }
+
+    /**
+     * 获取随机字符串编码
+     * @param integer $length 字符串长度
+     * @param integer $type 字符串类型(1纯数字,2纯字母,3数字字母)
+     * @return string
+     */
+    public static function randomCode($length = 10, $type = 1)
+    {
+        $numbs = '0123456789';
+        $chars = 'abcdefghijklmnopqrstuvwxyz';
+        if (intval($type) === 1) $chars = $numbs;
+        if (intval($type) === 2) $chars = "a{$chars}";
+        if (intval($type) === 3) $chars = "{$numbs}{$chars}";
+        $string = $chars[rand(1, strlen($chars) - 1)];
+        if (isset($chars)) while (strlen($string) < $length) {
+            $string .= $chars[rand(0, strlen($chars) - 1)];
+        }
+        return $string;
+    }
+
+    /**
      * 文件大小显示转换
-     * @param integer $size
+     * @param integer $size 文件大小
      * @param integer $dec
      * @return string
      */

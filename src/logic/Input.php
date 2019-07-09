@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2018 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
+// | 版权所有 2014~2019 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
 // +----------------------------------------------------------------------
 // | 官方网站: http://library.thinkadmin.top
 // +----------------------------------------------------------------------
@@ -15,6 +15,7 @@
 namespace library\logic;
 
 use library\Controller;
+use think\Validate;
 
 /**
  * 输入管理器
@@ -84,7 +85,7 @@ class Input extends Logic
     public function init(Controller $controller)
     {
         $this->controller = $controller;
-        $validate = \think\Validate::make($this->rule, $this->info);
+        $validate = Validate::make($this->rule, $this->info);
         if ($validate->check($this->data)) {
             return $this->data;
         } else {
